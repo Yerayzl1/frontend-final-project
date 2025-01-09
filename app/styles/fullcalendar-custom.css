@@ -1,0 +1,130 @@
+.fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #704214;
+}
+
+.fc-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fc-button {
+  background-color: #704214;
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.fc-button:hover {
+  background-color: #5a3210;
+}
+
+.fc-button.fc-button-primary {
+  background-color: #f5e5d3;
+  color: #704214;
+  border: 1px solid #704214;
+}
+
+.fc-button.fc-button-primary:hover {
+  background-color: #e1c6a8;
+}
+
+.fc-timegrid-axis-cushion {
+  color: #704214;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.fc-col-header-cell {
+  background-color: #e1c6a8;
+  color: #704214;
+  font-weight: bold;
+}
+
+.fc-daygrid-day.fc-day-today {
+  background-color: #ffe9d6;
+}
+
+.fc-daygrid-day-number {
+  font-weight: bold;
+  color: #704214;
+}
+
+.fc-event {
+  background-color: #d4b090;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.fc-event:hover {
+  background-color: #b78c6a;
+  cursor: pointer;
+}
+
+.fc-timegrid-slot {
+  background-color: #ffe9d6;
+  border: 1px solid #e1c6a8;
+}
+
+.fc-timegrid-slot-label {
+  color: #704214;
+  font-weight: bold;
+}
+
+.fc-timegrid-slot {
+  height: 3rem;
+}
+
+.fc-timegrid-all-day-cushion {
+  height: 3rem;
+}
+
+.fc-timegrid-slot:hover {
+  background-color: #f5e5d3;
+}
+
+button.sync-button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+button.sync-button:hover {
+  background-color: #357ae8;
+}
+
+.fc-view-container {
+  margin-top: 20px;
+}
+
+.fc-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: #704214 #f5e5d3;
+}
+
+.fc-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb {
+  background-color: #704214;
+  border-radius: 4px;
+}
+
+.fc-scroller::-webkit-scrollbar-track {
+  background-color: #f5e5d3;
+}

@@ -1,5 +1,5 @@
 {
-  "name": "plantilla",
+  "name": "frontend-projecte",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,11 +11,20 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "6.1.15",
+    "@fullcalendar/interaction": "6.1.15",
+    "@fullcalendar/react": "6.1.15",
+    "@fullcalendar/timegrid": "6.1.15",
     "@remix-run/node": "^2.15.2",
     "@remix-run/react": "^2.15.2",
     "@remix-run/serve": "^2.15.2",
+    "chart.js": "4.4.7",
+    "frontend-projecte": "file:",
     "isbot": "^4.1.0",
+    "lucide-react": "0.469.0",
+    "plantilla": "file:",
     "react": "^18.2.0",
+    "react-chartjs-2": "5.3.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
