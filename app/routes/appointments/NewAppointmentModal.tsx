@@ -105,7 +105,7 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
               <option value="">Select Client</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
-                  {client.username}
+                  {client.name}
                 </option>
               ))}
             </select>
@@ -128,7 +128,7 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
               <option value="">Select Professional</option>
               {professionals.map((professional) => (
                 <option key={professional.id} value={professional.id}>
-                  {professional.username}
+                  {professional.name}
                 </option>
               ))}
             </select>

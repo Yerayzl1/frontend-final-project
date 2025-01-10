@@ -1,24 +1,16 @@
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import ViewServiceModal from "./services/ViewServiceModal";
 import { useState } from "react";
+import { ServicesData } from '~/components/data/services.server';
 
-const services = [
-  { id: 1, name: "Haircut" },
-  { id: 2, name: "Hair dye" },
-  { id: 3, name: "Manicure" },
-  { id: 4, name: "Shampoo treatment" },
-  { id: 5, name: "Conditioner treatment" },
-  { id: 6, name: "Nail polish" },
-  { id: 7, name: "Blow dry" },
-  { id: 8, name: "Facial treatment" },
-  { id: 9, name: "Hair treatment" },
-  { id: 10, name: "Massage" },
-];
+export const loader = async () => {
+  return await ServicesData();
+};
 
 export default function Services() {
+  const { services, user } = useLoaderData();
   const [isViewServiceModalOpen, setIsViewServiceModalOpen] = useState(false);
   const [viewService, setViewService] = useState(null);
-  const [isAdmin] = useState(true);
 
   const openViewModal = (service) => {
     setViewService(service);
@@ -73,7 +65,7 @@ export default function Services() {
           isOpen={isViewServiceModalOpen}
           onClose={closeViewModal}
           service={viewService}
-          isAdmin={isAdmin}
+          user={user}
           onUpdate={handleUpdate}
           onReserve={handleReserve}
         />

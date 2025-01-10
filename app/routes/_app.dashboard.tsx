@@ -33,14 +33,6 @@ export default function Dashboard() {
     navigate("/dashboard");
   };
 
-  if (!clientsCount || !appointmentsCount || !servicesCount || !productsCount || !appointments) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-3xl text-gray-500">Loading...</div>
-        </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">
       {/* Summary Section */}

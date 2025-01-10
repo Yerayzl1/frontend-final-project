@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useNavigate } from '@remix-run/react';
+import React, { useEffect, useState } from "react";
 
 export default function ViewServiceModal({
   isOpen,
   onClose,
   service,
-  isAdmin,
+  user,
   onUpdate,
   onReserve,
 }: {
@@ -17,10 +18,12 @@ export default function ViewServiceModal({
     price: string;
     duration: string;
   };
-  isAdmin: boolean;
+  user: any;
   onUpdate?: (updatedService: any) => void;
   onReserve?: (reservationData: any) => void;
 }) {
+  const navigate = useNavigate();
+  const [professionals, setProfessionals] = useState([]);
   const [formData, setFormData] = useState({
     name: service.name,
     description: service.description,
@@ -29,9 +32,38 @@ export default function ViewServiceModal({
   });
 
   const [reservationData, setReservationData] = useState({
-    date: "",
-    time: "",
+    professional_id: "",
+    start_date: "",
+    hour: "",
+    payment_method: "Cash",
+    client_id: user.id,
+    service_id: service.id,
+    total_price: service.price,
   });
+
+  useEffect(() => {
+    const isNotAdmin = user.role_id !== 1;
+    if (isNotAdmin) {
+      fetchProfessionals();
+    }
+  }, [user.role_id]);
+
+  const fetchProfessionals = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/professionals", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch professionals");
+      }
+      const data = await response.json();
+      setProfessionals(data);
+    } catch (err) {
+      console.error("Error fetching professionals:", err.message);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -41,26 +73,74 @@ export default function ViewServiceModal({
   };
 
   const handleReservationChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setReservationData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onUpdate) {
-      onUpdate({ ...service, ...formData });
+  
+    try {
+      const response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update service");
+      }
+  
+      const updatedService = await response.json();
+  
+      if (onUpdate) {
+        onUpdate(updatedService);
+      }
+      navigate("/services");
+      onClose();
+    } catch (err) {
+      console.error("Error updating service:", err.message);
+      alert("Error updating service");
     }
-    onClose();
   };
 
-  const handleReserve = (e: React.FormEvent) => {
+  const handleReserve = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onReserve) {
-      onReserve({ serviceId: service.id, ...reservationData });
+
+    try {
+      reservationData.professional_id = Number(reservationData.professional_id);  
+      reservationData.hour = `${reservationData.hour}:00`;  
+
+      const response = await fetch("http://localhost:8000/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(reservationData),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to create appointment");
+      }
+  
+      const result = await response.json();
+  
+      if (onReserve) {
+        onReserve(result.appointment);
+      }
+  
+      navigate("/services");
+      onClose();
+    } catch (err) {
+      console.error("Error creating appointment:", err.message);
+      alert("Error creating appointment");
     }
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -70,14 +150,14 @@ export default function ViewServiceModal({
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#704214]">
-            {isAdmin ? "Edit Service" : "Reserve Service"}
+            {user.role_id == 1 ? "Edit Service" : "Reserve Service"}
           </h1>
           <button onClick={onClose} className="text-[#704214] hover:text-red-600" title="Close">
             ✕
           </button>
         </div>
 
-        {isAdmin ? (
+        {user.role_id == 1 ? (
           <form onSubmit={handleUpdate} className="space-y-6">
             <input type="hidden" name="id" value={service.id} />
             <div>
@@ -108,7 +188,7 @@ export default function ViewServiceModal({
                 value={formData.description}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+                className="mt-1 block w-full h-6 border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
               />
             </div>
 
@@ -153,36 +233,97 @@ export default function ViewServiceModal({
           </form>
         ) : (
           <form onSubmit={handleReserve} className="space-y-6">
+          {/* Select Professional */}
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-[#704214]">
-                Date
+              <label
+                htmlFor="professional_id"
+                className="block text-sm font-medium text-[#704214]"
+              >
+                Professional
+              </label>
+              <select
+                id="professional_id"
+                name="professional_id"
+                value={reservationData.professional_id}
+                onChange={handleReservationChange}
+                required
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+              >
+                <option value="">Select Professional</option>
+                {professionals.map((professional) => (
+                  <option key={professional.id} value={professional.id}>
+                    {professional.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Start date */}
+            <div>
+              <label
+                htmlFor="start_date"
+                className="block text-sm font-medium text-[#704214]"
+              >
+                Start date
               </label>
               <input
                 type="date"
-                id="date"
-                name="date"
-                value={reservationData.date}
+                id="start_date"
+                name="start_date"
+                value={reservationData.start_date}
                 onChange={handleReservationChange}
                 required
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
               />
             </div>
 
+            {/* Hour */}
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-[#704214]">
-                Time
+              <label
+                htmlFor="hour"
+                className="block text-sm font-medium text-[#704214]"
+              >
+                Hour
               </label>
               <input
                 type="time"
-                id="time"
-                name="time"
-                value={reservationData.time}
+                id="hour"
+                name="hour"
+                value={reservationData.hour}
                 onChange={handleReservationChange}
                 required
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
               />
             </div>
 
+            {/* Payment Method */}
+            <div>
+              <label
+                htmlFor="payment_method"
+                className="block text-sm font-medium text-[#704214]"
+              >
+                Payment Method
+              </label>
+              <select
+                id="payment_method"
+                name="payment_method"
+                value={reservationData.payment_method}
+                onChange={handleReservationChange}
+                required
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+              >
+                <option value="Cash">Cash</option>
+                <option value="Credit">Credit</option>
+                <option value="Debit">Debit</option>
+              </select>
+            </div>
+
+            {/* Hidden Fields */}
+            <input type="hidden" name="client_id" value={reservationData.client_id} />
+            <input type="hidden" name="service_id" value={reservationData.service_id} />
+            <input type="hidden" name="total_price" value={reservationData.total_price} />
+
+            {/* Submit Button */}
             <div className="text-center">
               <button
                 type="submit"
