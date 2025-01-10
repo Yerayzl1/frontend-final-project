@@ -1,10 +1,70 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 export default function Register() {
+  const [formData, setFormData] = useState({
+    username: "",
+    name: "",
+    email: "",
+    phone_number: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:8000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          name: formData.name,
+          email: formData.email,
+          phone_number: formData.phone_number,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.errors ? Object.values(data.errors).join(", ") : data.message);
+      }
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "An error occurred during registration.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F5E5D3] flex items-center justify-center font-sans">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h1 className="text-2xl font-bold text-[#704214] mb-6 text-center">Register</h1>
 
-        <form method="post" className="space-y-4">
+        {/* Muestra un mensaje de error si ocurre */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded-md text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-[#704214]">
@@ -15,6 +75,8 @@ export default function Register() {
               id="username"
               name="username"
               required
+              value={formData.username}
+              onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
@@ -29,6 +91,8 @@ export default function Register() {
               id="name"
               name="name"
               required
+              value={formData.name}
+              onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
@@ -43,6 +107,24 @@ export default function Register() {
               id="email"
               name="email"
               required
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          {/* Phone number */}
+          <div>
+            <label htmlFor="phone_number" className="block text-sm font-medium text-[#704214]">
+              Phone number
+            </label>
+            <input
+              type="phone_number"
+              id="phone_number"
+              name="phone_number"
+              required
+              value={formData.phone_number}
+              onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
@@ -57,6 +139,8 @@ export default function Register() {
               id="password"
               name="password"
               required
+              value={formData.password}
+              onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
@@ -71,6 +155,8 @@ export default function Register() {
               id="confirmPassword"
               name="confirmPassword"
               required
+              value={formData.confirmPassword}
+              onChange={handleChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>

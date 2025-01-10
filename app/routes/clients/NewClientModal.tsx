@@ -1,6 +1,43 @@
 export default function NewClientModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const clientData = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      username: formData.get("username"),
+      password: formData.get("password"),
+      phone_number: formData.get("phone_number"),
+      role_id: 3,
+      is_active: formData.get("is_active") === "on" ? true : false,
+      remember_token: null,
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(clientData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create client");
+      }
+
+      const result = await response.json();
+      console.log("Client created:", result);
+      onClose();
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
@@ -15,36 +52,58 @@ export default function NewClientModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        <form method="post" className="space-y-6">
-          {/* Client Name */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
           <div>
-            <label
-              htmlFor="clientName"
-              className="block text-sm font-medium text-[#704214]"
-            >
-              Client Name
+            <label htmlFor="name" className="block text-sm font-medium text-[#704214]">
+              Name
             </label>
             <input
               type="text"
-              id="clientName"
-              name="clientName"
+              id="name"
+              name="name"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
 
-          {/* Client Email */}
+          {/* Email */}
           <div>
-            <label
-              htmlFor="clientEmail"
-              className="block text-sm font-medium text-[#704214]"
-            >
-              Client Email
+            <label htmlFor="email" className="block text-sm font-medium text-[#704214]">
+              Email
             </label>
             <input
               type="email"
-              id="clientEmail"
-              name="clientEmail"
+              id="email"
+              name="email"
+              required
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          {/* Username */}
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-[#704214]">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-[#704214]">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
@@ -52,36 +111,29 @@ export default function NewClientModal({ isOpen, onClose }) {
 
           {/* Phone Number */}
           <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-[#704214]"
-            >
+            <label htmlFor="phone_number" className="block text-sm font-medium text-[#704214]">
               Phone Number
             </label>
             <input
               type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
+              id="phone_number"
+              name="phone_number"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
 
-          {/* Address */}
+          {/* Is Active */}
           <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-[#704214]"
-            >
-              Address
+            <label htmlFor="is_active" className="inline-flex items-center text-sm font-medium text-[#704214]">
+              <input
+                type="checkbox"
+                id="is_active"
+                name="is_active"
+                className="mr-2 rounded border-gray-300 focus:ring-[#704214]"
+              />
+              Active
             </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-            />
           </div>
 
           {/* Submit Button */}
@@ -90,7 +142,7 @@ export default function NewClientModal({ isOpen, onClose }) {
               type="submit"
               className="bg-green-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-green-700"
             >
-              Add Client
+              Create Client
             </button>
           </div>
         </form>

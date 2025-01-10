@@ -1,28 +1,20 @@
 import { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import NoLogged from "../components/NoLogged";
 
 export default function AppWrapper() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // async function checkLoginStatus() {
-    //   try {
-    //     const response = await fetch("/api/auth/check");
-    //     if (!response.ok) {
-    //       throw new Error("Not logged in");
-    //     }
-
-    //     const data = await response.json();
-    //     setIsLoggedIn(data.isLoggedIn);
-    //   } catch {
-    //     setIsLoggedIn(false);
-    //   }
-    // }
-
-    // checkLoginStatus();
-  }, []);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsLoggedIn(false);
+      window.location.href = "/login"; 
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, [navigate]);
 
   if (isLoggedIn === null) {
     return (
@@ -32,16 +24,16 @@ export default function AppWrapper() {
     );
   }
 
-  if (!isLoggedIn) {
-    return <NoLogged />;
-  }
-
   return (
     <div className="min-h-screen bg-[#F5E5D3]">
-      <Navbar />
-      <div className="p-4">
-        <Outlet />
-      </div>
+      {isLoggedIn ? (
+        <>
+          <Navbar />
+          <div className="p-4">
+            <Outlet />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

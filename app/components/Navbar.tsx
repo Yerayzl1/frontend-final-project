@@ -1,7 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   const handleToggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -117,7 +124,7 @@ export default function Navbar() {
         </button>
         <button
           className="w-full text-left py-2 px-2 hover:bg-gray-200 rounded-md cursor-pointer"
-          onClick={() => (window.location.href = "/")}
+          onClick={handleLogout}
         >
           <span className="text-[#704214]">Logout</span>
         </button>
