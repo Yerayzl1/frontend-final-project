@@ -3,23 +3,51 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "../styles/fullcalendar-custom.css";
 
 export default function Calendar() {
   const [events, setEvents] = useState([]);
-  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authUrl, setAuthUrl] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const errorParam = queryParams.get("error");
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+      return;
+    }
+
+    async function checkAuth() {
+      try {
+        const response = await fetch("http://localhost:8000/api/google/check-auth");
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+
+        if (!data.authenticated) {
+          const authResponse = await fetch("http://localhost:8000/api/google/auth-url");
+          const authData = await authResponse.json();
+          setAuthUrl(authData.authUrl);
+        } else {
+          fetchEvents();
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+      }
+    }
+
     async function fetchEvents() {
       try {
-        const response = await fetch("/api/events");
-        const data = await response.json();
+        const response = await fetch("http://localhost:8000/api/google/events");
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
 
+        const data = await response.json();
         const formattedEvents = data.map((event) => ({
           title: event.summary,
-          start: event.start.dateTime || event.start.date, 
-          end: event.end.dateTime || event.end.date,       
+          start: event.start.dateTime || event.start,
+          end: event.end.dateTime || event.end,
         }));
 
         setEvents(formattedEvents);
@@ -28,38 +56,39 @@ export default function Calendar() {
       }
     }
 
-    fetchEvents();
+    checkAuth();
   }, []);
-
-  const handleSyncClick = () => {
-    navigate("/calendar/view");
-  };
 
   return (
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">
-      {/* Sync Button */}
-      <div className="flex justify-center mb-6">
-        <button
-          onClick={handleSyncClick}
-          className="bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700"
-        >
-          Sync with Google Calendar
-        </button>
-      </div>
-
-    {/* FullCalendar */}
-    <FullCalendar
-      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-      initialView="timeGridWeek"
-      headerToolbar={{
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,timeGridWeek,timeGridDay",
-      }}
-      events={events} 
-      editable={false} 
-      selectable={true}
-      />
+      {error && (
+        <div className="text-center mb-4">
+          <p className="text-red-600 text-lg font-semibold">{error}</p>
+        </div>
+      )}
+      {!isAuthenticated ? (
+        <div className="flex justify-center items-center h-full">
+          <a
+            href={authUrl}
+            className="bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700"
+          >
+            Authenticate with Google
+          </a>
+        </div>
+      ) : (
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView="timeGridWeek"
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
+          }}
+          events={events}
+          editable={false}
+          selectable={true}
+        />
+      )}
     </div>
   );
 }
