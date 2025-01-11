@@ -5,7 +5,10 @@ export default function EditOneServiceModal({ isOpen, onClose, service, onUpdate
     name: service.name,
     description: service.description,
     price: service.price,
+    duration: service.duration,
   });
+
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -14,10 +17,31 @@ export default function EditOneServiceModal({ isOpen, onClose, service, onUpdate
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = () => {
-    const updatedService = { ...service, ...formData };
-    onUpdate(updatedService);
-    onClose();
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update service");
+      }
+
+      const updatedService = await response.json();
+      onUpdate(updatedService);
+    } catch (error) {
+      console.error("Error updating service:", error);
+      alert("Failed to update service. Please try again.");
+    } finally {
+      setLoading(false);
+      onClose();
+    }
   };
 
   return (
@@ -30,7 +54,9 @@ export default function EditOneServiceModal({ isOpen, onClose, service, onUpdate
         <form className="space-y-4">
           {/* Service Image */}
           <div>
-            <label htmlFor="image" className="block text-sm font-medium text-[#704214]">Service Image</label>
+            <label htmlFor="image" className="block text-sm font-medium text-[#704214]">
+              Service Image
+            </label>
             <img
               src={`/img/services/${formData.name.toLowerCase().replace(" ", "-")}.webp`}
               alt={formData.name}
@@ -85,19 +111,39 @@ export default function EditOneServiceModal({ isOpen, onClose, service, onUpdate
               required
             />
           </div>
+
+          {/* Service Duration */}
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-[#704214]">
+              Duration (minutes)
+            </label>
+            <input
+              type="number"
+              id="duration"
+              name="duration"
+              value={formData.duration}
+              onChange={handleInputChange}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+              required
+            />
+          </div>
         </form>
         <div className="flex justify-end space-x-4 mt-6">
           <button
             onClick={onClose}
             className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+            disabled={loading}
           >
             Cancel
           </button>
           <button
             onClick={handleUpdate}
-            className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+            className={`bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            Save Changes
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

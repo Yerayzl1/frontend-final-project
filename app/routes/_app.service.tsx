@@ -1,122 +1,62 @@
 import { useState } from "react";
+import { Link, useLoaderData } from '@remix-run/react';
 import Chart from "../components/Chart";
-import EditServiceModal from "./services/EditServiceModal";
-import DeleteServiceModal from "./services/DeleteServiceModal";
+import EditAppointmentModal from './appointments/EditAppointmentModal';
+import DeleteAppointmentModal from './appointments/DeleteAppointmentModal';
 import EditOneServiceModal from "./services/EditOneServiceModal";
+import DeleteServiceModal from "./services/DeleteServiceModal";
+import { ServiceData } from '~/components/data/service.server';
+
+export async function loader() {
+  const data = await ServiceData();
+  return data;
+}
 
 export default function Service() {
-  const servicesDoneData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Services Done",
-        data: [10, 15, 8, 20],
-        backgroundColor: "rgba(0, 173, 255, 0.5)",
-        borderColor: "rgba(0, 173, 255, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  const { labels, appointmentsData, earningsData, recentAppointments, services } = useLoaderData();
 
-  const earningsData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Earnings",
-        data: [500, 750, 600, 1000],
-        backgroundColor: "rgba(0, 173, 255, 0.5)",
-        borderColor: "rgba(0, 173, 255, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const recentServices = [
-    {
-      service: "Haircut",
-      description: "Haircut for a customer",
-      price: "20.00€",
-      client: "Sarah Johnson",
-      professional: "John Bones",
-      date: "22/03/2024",
-      total: "20.00€",
-      payment: "Credit",
-    },
-    {
-      service: "Haircut",
-      description: "Haircut for a customer",
-      price: "20.00€",
-      client: "Sarah Johnson",
-      professional: "John Bones",
-      date: "22/03/2024",
-      total: "20.00€",
-      payment: "Credit",
-    },
-    {
-      service: "Haircut",
-      description: "Haircut for a customer",
-      price: "20.00€",
-      client: "Sarah Johnson",
-      professional: "John Bones",
-      date: "22/03/2024",
-      total: "20.00€",
-      payment: "Credit",
-    },
-    {
-      service: "Haircut",
-      description: "Haircut for a customer",
-      price: "20.00€",
-      client: "Sarah Johnson",
-      professional: "John Bones",
-      date: "22/03/2024",
-      total: "20.00€",
-      payment: "Credit",
-    },
-  ];
-
-  const [services, setServices] = useState([
-    { id: 1, name: "Haircut", description: "Standard haircut", price: "20.00" },
-    { id: 2, name: "Hair dye", description: "Full hair dye", price: "35.00" },
-  ]);
-
-  const [isEditServiceModalOpen, setIsEditServiceModalOpen] = useState(false);
-  const [isDeleteServiceModalOpen, setIsDeleteServiceModalOpen] = useState(false);
+  const [isEditAppointmentModalOpen, setIsEditAppointmentModalOpen] = useState(false);
+  const [isDeleteAppointmentModalOpen, setIsDeleteAppointmentModalOpen] = useState(false);
   const [isEditOneServiceModalOpen, setIsEditOneServiceModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedOneService, setSelectedOneService] = useState(null);
+  const [isDeleteServiceModalOpen, setIsDeleteServiceModalOpen] = useState(false);
 
-  const handleOpenModal = (service) => {
-    setSelectedService(service);
-    setIsEditServiceModalOpen(true);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+
+  const handleOpenEditAppointmentModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsEditAppointmentModalOpen(true);
   };
   
-  const handleUpdateService = (updatedService) => {
-    console.log("Updated Service:", updatedService);
-    setIsEditServiceModalOpen(false);
+  const handleUpdateAppointment = () => {
+    window.location.reload();
   };
 
-  const handleOpenDeleteModal = (service) => {
+  const handleOpenDeleteAppointmentModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsDeleteAppointmentModalOpen(true);
+  };
+
+  const handleDeleteAppointment = () => {
+    window.location.reload();
+  };
+
+  const handleOpenEditServiceModal = (service) => {
+    setSelectedService(service);
+    setIsEditOneServiceModalOpen(true);
+  };
+
+  const handleOpenDeleteServiceModal = (service) => {
     setSelectedService(service);
     setIsDeleteServiceModalOpen(true);
   };
 
-  const handleDeleteService = (id) => {
-    console.log("Deleted service ID:", id);
-    setIsDeleteServiceModalOpen(false);
+  const handleUpdateOneService = () => {
+    window.location.reload();
   };
 
-  const handleOpenEditModal = (service) => {
-    setSelectedOneService(service);
-    setIsEditOneServiceModalOpen(true);
-  };
-
-  const handleUpdateOneService = (updatedService) => {
-    setServices((prev) =>
-      prev.map((service) =>
-        service.id === updatedService.id ? updatedService : service
-      )
-    );
-    console.log("Updated Service:", updatedService);
+  const handleDeleteOneService = () => {
+    window.location.reload();
   };
 
   return (
@@ -124,24 +64,52 @@ export default function Service() {
 
       {/* Charts */}
       <div className="grid grid-cols-2 gap-6 mb-8">
-        {/* Services Done Chart */}
+        {/* Appointments Done Chart */}
         <div className="[#D8C3A5] p-4 rounded-md shadow-md">
-          <h3 className="text-lg font-semibold text-[#704214] mb-2">Services Done</h3>
-          <Chart data={servicesDoneData} options={{ responsive: true, maintainAspectRatio: true }} />
+          <h3 className="text-lg font-semibold text-[#704214] mb-2">Appointments Done</h3>
+          <Chart
+            data={{
+              labels: labels,
+              datasets: [
+                {
+                  label: "Appointments Done",
+                  data: appointmentsData,
+                  backgroundColor: "rgba(0, 173, 255, 0.5)",
+                  borderColor: "rgba(0, 173, 255, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            }}
+            options={{ responsive: true, maintainAspectRatio: true }}
+          />
         </div>
 
         {/* Earnings Chart */}
         <div className="[#D8C3A5] p-4 rounded-md shadow-md">
           <h3 className="text-lg font-semibold text-[#704214] mb-2">Earnings</h3>
-          <Chart data={earningsData} options={{ responsive: true, maintainAspectRatio: true }} />
+          <Chart
+            data={{
+              labels: labels,
+              datasets: [
+                {
+                  label: "Earnings (€)",
+                  data: earningsData,
+                  backgroundColor: "rgba(255, 99, 132, 0.5)",
+                  borderColor: "rgba(255, 99, 132, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            }}
+            options={{ responsive: true, maintainAspectRatio: true }}
+          />
         </div>
       </div>
 
-      {/* Recent Services */}
+      {/* Recent appointments */}
       <div className="bg-[#E1C6A8] p-4 rounded-md shadow-md mb-8">
-        <h3 className="text-lg italic text-[#704214] mb-4">Last services</h3>
+        <h3 className="text-lg italic text-[#704214] mb-4">Last appointments</h3>
         <div className="space-y-4">
-          {recentServices.map((service, index) => (
+          {recentAppointments.map((appointment, index) => (
             <div
               key={index}
               className="flex justify-between bg-white p-4 rounded-full shadow-md"
@@ -149,76 +117,73 @@ export default function Service() {
               {/* Icon and Service Info */}
               <div className="flex items-center space-x-4">
                 <img
-                  src={`/img/services/${service.service.toLowerCase().replace(" ", "-")}.webp`}
-                  alt={service.service}
+                  src={`/img/services/${appointment.service.name.toLowerCase().replace(" ", "-")}.webp`}
+                  alt={appointment.service.name}
                   className="w-10 h-10 rounded-lg"
                 />
               <div>
-                <p className="text-sm font-semibold text-[#704214]">{service.service}</p>
-                <p className="text-xs text-gray-500">{service.price}</p>
+                <p className="text-sm font-semibold text-[#704214]">{appointment.service.name}</p>
+                <p className="text-xs text-gray-500">{appointment.service.price}</p>
               </div>
             </div>
 
               {/* Client and Professional */}
               <div className="flex items-center space-x-8">
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-[#704214]">{service.client}</p>
-                  <p className="text-xs text-gray-500">{service.client.toLowerCase()}</p>
+                  <p className="text-sm font-semibold text-[#704214]">{appointment.client.name}</p>
+                  <p className="text-xs text-gray-500">{appointment.client.name.toLowerCase()}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold text-[#704214]">{service.professional}</p>
-                  <p className="text-xs text-gray-500">{service.professional.toLowerCase()}</p>
+                  <p className="text-sm font-semibold text-[#704214]">{appointment.professional.name}</p>
+                  <p className="text-xs text-gray-500">{appointment.professional.name.toLowerCase()}</p>
                 </div>
               </div>
 
               {/* Date, Price, and Payment */}
               <div className="flex items-center space-x-4">
-                <p className="text-sm text-[#704214]">{service.date}</p>
-                <p className="text-sm font-semibold text-[#704214]">{service.price}</p>
-                <p className="text-sm text-gray-500">{service.payment}</p>
+                <p className="text-sm text-[#704214]">{appointment.start_date}</p>
+                <p className="text-sm font-semibold text-[#704214]">{appointment.total_price}€</p>
+                <p className="text-sm text-gray-500">{appointment.payment_method}</p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex space-x-4">
-                <button onClick={() => handleOpenModal(service)} className="text-yellow-500 hover:text-yellow-600">
+                <button onClick={() => handleOpenEditAppointmentModal(appointment)} className="text-yellow-500 hover:text-yellow-600">
                   <i className="fa-regular fa-pen-to-square"></i>
                 </button>
                 <div className="border-l border-gray-300"></div>
-                <button onClick={() => handleOpenDeleteModal(service)} className="text-red-500 hover:text-red-600">
+                <button onClick={() => handleOpenDeleteAppointmentModal(appointment)} className="text-red-500 hover:text-red-600">
                   <i className="fa-regular fa-trash-can"></i>
                 </button>
               </div>
               
-              {/* Edit Service Modal */}
-              {isEditServiceModalOpen && (
-                <EditServiceModal
-                  isOpen={isEditServiceModalOpen}
-                  onClose={() => setIsEditServiceModalOpen(false)}
-                  service={selectedService}
-                  onUpdate={handleUpdateService}
+              {/* Edit Appointment Modal */}
+              {isEditAppointmentModalOpen && (
+                <EditAppointmentModal
+                  isOpen={isEditAppointmentModalOpen}
+                  onClose={() => setIsEditAppointmentModalOpen(false)}
+                  appointment={selectedAppointment}
+                  onUpdate={handleUpdateAppointment}
                 />
               )}
 
-              {/* Delete Service Modal */}
-              {isDeleteServiceModalOpen && selectedService && (
-                <DeleteServiceModal
-                  isOpen={isDeleteServiceModalOpen}
-                  onClose={() => setIsDeleteServiceModalOpen(false)}
-                  service={selectedService}
-                  onDelete={handleDeleteService}
+              {/* Delete Appointment Modal */}
+              {isDeleteAppointmentModalOpen && selectedAppointment && (
+                <DeleteAppointmentModal
+                  appointmentId={selectedAppointment.id}
+                  onClose={() => setIsDeleteAppointmentModalOpen(false)}
+                  onDelete={handleDeleteAppointment}
                 />
               )}
             </div>
           ))}
         </div>
 
-        {/* Find a Service Button */}
+        {/* Find a Appointment Button */}
         <div className="flex justify-end mt-4">
-          <input
-            type="text"
-            placeholder="Find a recent service"
-            className="rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none bg-blue-500"
-          />
+          <Link to={"/service-record"} className="text-white py-2 px-4 rounded-md shadow-md bg-blue-500 hover:bg-blue-600">
+            Find a recent appointment
+          </Link>
         </div>
       </div>
 
@@ -226,8 +191,8 @@ export default function Service() {
       <div className="bg-[#E1C6A8] p-4 rounded-md shadow-md">
         <h3 className="text-lg font-semibold text-[#704214] mb-4">Services</h3>
         <div className="space-y-4">
-          {services.map((service, index) => (
-            <div key={index} className="flex justify-between items-center bg-[#F5E5D3] p-2 rounded-md shadow-sm">
+          {services.map((service) => (
+            <div key={service.id} className="flex justify-between items-center bg-[#F5E5D3] p-2 rounded-md shadow-sm">
               <div className="flex items-center space-x-4">
                 <img
                   src={`/img/services/${service.name.toLowerCase().replace(" ", "-")}.webp`}
@@ -239,21 +204,21 @@ export default function Service() {
               </div>
               {/* Action Buttons */}
               <div className="flex space-x-4">
-                <button onClick={() => handleOpenEditModal(service)} className="text-yellow-500 hover:text-yellow-600">
+                <button onClick={() => handleOpenEditServiceModal(service)} className="text-yellow-500 hover:text-yellow-600">
                   <i className="fa-regular fa-pen-to-square"></i>
                 </button>
                 <div className="border-l border-gray-300"></div>
-                <button onClick={() => handleOpenDeleteModal(service)} className="text-red-500 hover:text-red-600">
+                <button onClick={() => handleOpenDeleteServiceModal(service)} className="text-red-500 hover:text-red-600">
                   <i className="fa-regular fa-trash-can"></i>
                 </button>
               </div>
 
               {/* Edit Service Modal */}
-              {isEditOneServiceModalOpen && selectedOneService && (
+              {isEditOneServiceModalOpen && selectedService && (
                 <EditOneServiceModal
                   isOpen={isEditOneServiceModalOpen}
                   onClose={() => setIsEditOneServiceModalOpen(false)}
-                  service={selectedOneService}
+                  service={selectedService}
                   onUpdate={handleUpdateOneService}
                 />
               )}
@@ -264,19 +229,11 @@ export default function Service() {
                   isOpen={isDeleteServiceModalOpen}
                   onClose={() => setIsDeleteServiceModalOpen(false)}
                   service={selectedService}
-                  onDelete={handleDeleteService}
+                  onDelete={handleDeleteOneService}
                 />
               )}
             </div>
           ))}
-        </div>
-        {/* Search a Service Button */}
-        <div className="flex justify-end mt-4">
-          <input
-            type="text"
-            placeholder="Search a service 🔍"
-            className="rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none bg-gray-500"
-          />
         </div>
       </div>
     </div>

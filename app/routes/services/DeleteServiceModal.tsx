@@ -8,15 +8,15 @@ export default function DeleteServiceModal({ isOpen, onClose, service, onDelete 
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/services/${service.id}`, {
+      const response = await fetch(`http://localhost:8000/api/services/${service.id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
       if (response.ok) {
-        alert("Service deleted successfully!");
         onDelete(service.id);
       } else {
         alert("Failed to delete service.");
@@ -38,7 +38,7 @@ export default function DeleteServiceModal({ isOpen, onClose, service, onDelete 
       <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full">
         <h2 className="text-lg font-bold text-[#704214] mb-4">Delete Service</h2>
         <p className="text-[#704214] mb-6">
-          Are you sure you want to delete the service "{service.name}"? This action cannot be undone.
+          Are you sure you want to delete the service <strong>{service.name}</strong>? This action cannot be undone.
         </p>
         <div className="flex justify-end space-x-4">
           <button

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import EditServiceModal from "./services/EditServiceModal";
+import EditOneServiceModal from './services/EditOneServiceModal';
 import DeleteServiceModal from "./services/DeleteServiceModal";
 
 export default function ServiceRecord() {
@@ -72,18 +72,18 @@ export default function ServiceRecord() {
     },
   ]);
 
-  const [isEditServiceModalOpen, setIsEditServiceModalOpen] = useState(false);
+  const [isEditOneServiceModalOpen, setIsEditOneServiceModalOpen] = useState(false);
   const [isDeleteServiceModalOpen, setIsDeleteServiceModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   
   const handleOpenModal = (service) => {
     setSelectedService(service);
-    setIsEditServiceModalOpen(true);
+    setIsEditOneServiceModalOpen(true);
   };
   
   const handleUpdateService = (updatedService) => {
     console.log("Updated Service:", updatedService);
-    setIsEditServiceModalOpen(false);
+    setIsEditOneServiceModalOpen(false);
   };
 
   const handleOpenDeleteModal = (service) => {
@@ -160,10 +160,10 @@ export default function ServiceRecord() {
               </div>
 
               {/* Edit Service Modal */}
-              {isEditServiceModalOpen && (
-                <EditServiceModal
-                  isOpen={isEditServiceModalOpen}
-                  onClose={() => setIsEditServiceModalOpen(false)}
+              {isEditOneServiceModalOpen && (
+                <EditOneServiceModal
+                  isOpen={isEditOneServiceModalOpen}
+                  onClose={() => setIsEditOneServiceModalOpen(false)}
                   service={selectedService}
                   onUpdate={handleUpdateService}
                 />

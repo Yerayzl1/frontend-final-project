@@ -121,7 +121,7 @@ export default function Dashboard() {
           }}
         />
 
-        <Link to={"/calendar"} className="bg-[#E1C6A8] text-[#704214] py-2 px-4 rounded-md shadow-md hover:bg-[#d4b090]">
+        <Link to={"/service-record"} className="bg-[#E1C6A8] text-[#704214] py-2 px-4 rounded-md shadow-md hover:bg-[#d4b090]">
           Manage appointments
         </Link>
       </div>

@@ -19,6 +19,7 @@
     "@remix-run/react": "^2.15.2",
     "@remix-run/serve": "^2.15.2",
     "chart.js": "4.4.7",
+    "date-fns": "^4.1.0",
     "frontend-projecte": "file:",
     "isbot": "^4.1.0",
     "lucide-react": "0.469.0",
