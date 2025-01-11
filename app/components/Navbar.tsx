@@ -111,9 +111,9 @@ export default function Navbar() {
         </button>
         <button
           className="w-full text-left py-2 px-2 hover:bg-gray-200 rounded-md cursor-pointer"
-          onClick={() => (window.location.href = "/service-record")}
+          onClick={() => (window.location.href = "/appointments")}
         >
-          <span className="text-[#704214]">Service Record</span>
+          <span className="text-[#704214]">Appointments</span>
         </button>
         <div className="border-t border-gray-200 my-2"></div>
         <button

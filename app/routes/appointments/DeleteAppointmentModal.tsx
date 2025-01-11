@@ -6,7 +6,6 @@ export default function DeleteAppointmentModal({ appointmentId, onClose, onDelet
   const handleDelete = async () => {
     setLoading(true);
     try {
-      console.log("Deleting appointment with ID:", appointmentId);
       const response = await fetch(`http://localhost:8000/api/appointments/${appointmentId}`, {
         method: "DELETE",
         headers: {
@@ -14,7 +13,6 @@ export default function DeleteAppointmentModal({ appointmentId, onClose, onDelet
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log(response);
 
       if (response.ok) {
         onDelete(); 

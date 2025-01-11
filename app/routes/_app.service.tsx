@@ -181,7 +181,7 @@ export default function Service() {
 
         {/* Find a Appointment Button */}
         <div className="flex justify-end mt-4">
-          <Link to={"/service-record"} className="text-white py-2 px-4 rounded-md shadow-md bg-blue-500 hover:bg-blue-600">
+          <Link to={"/appointments"} className="text-white py-2 px-4 rounded-md shadow-md bg-blue-500 hover:bg-blue-600">
             Find a recent appointment
           </Link>
         </div>
