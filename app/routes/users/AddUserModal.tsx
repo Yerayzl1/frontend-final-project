@@ -1,24 +1,23 @@
 import React, { useState } from "react";
 
-type UserRole = "Client" | "Admin" | "Professional";
-
 export default function AddUserModal({
   isOpen,
   onClose,
-  onCreate,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (user: { id: number, name: string; username: string; role: UserRole; dob: string }) => void;
 }) {
-
   const [formData, setFormData] = useState({
-    id: 0,
     name: "",
+    email: "",
     username: "",
-    role: "Client" as UserRole,
-    dob: "",
+    password: "",
+    phone_number: "",
+    is_active: true,
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -27,10 +26,34 @@ export default function AddUserModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate({ ...formData, role: formData.role as UserRole });
-    onClose();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ ...formData, role_id: 3 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create user");
+      }
+
+      await response.json();
+      onClose();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setError("Failed to create user");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -48,6 +71,8 @@ export default function AddUserModal({
             ✕
           </button>
         </div>
+
+        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
@@ -82,48 +107,82 @@ export default function AddUserModal({
             />
           </div>
 
-          {/* Role */}
+          {/* Email */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-[#704214]">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-            >
-              <option value="">Select Role</option>
-              <option value="Admin">Admin</option>
-              <option value="Professional">Professional</option>
-              <option value="Client">Client</option>
-            </select>
-          </div>
-
-          {/* Anniversary Date */}
-          <div>
-            <label htmlFor="dob" className="block text-sm font-medium text-[#704214]">
-              Anniversary Date
+            <label htmlFor="email" className="block text-sm font-medium text-[#704214]">
+              Email
             </label>
             <input
-              type="date"
-              id="dob"
-              name="dob"
-              value={formData.dob}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
 
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-[#704214]">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label htmlFor="phone_number" className="block text-sm font-medium text-[#704214]">
+              Phone number
+            </label>
+            <input
+              type="text"
+              id="phone_number"
+              name="phone_number"
+              value={formData.phone_number}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          {/* Active Status */}
+          <div>
+            <label htmlFor="is_active" className="block text-sm font-medium text-[#704214]">
+              Active
+            </label>
+            <select
+              id="is_active"
+              name="is_active"
+              value={formData.is_active ? "true" : "false"}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, is_active: e.target.value === "true" }))
+              }
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
           <div className="text-center">
             <button
               type="submit"
-              className="bg-green-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-green-700"
+              disabled={loading}
+              className={`bg-green-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-green-700 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Create User
+              {loading ? "Creating..." : "Create User"}
             </button>
           </div>
         </form>

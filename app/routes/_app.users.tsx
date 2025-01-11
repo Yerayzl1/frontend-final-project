@@ -1,11 +1,33 @@
 import { useState } from "react";
+import { useLoaderData } from '@remix-run/react';
 import AddUserModal from "./users/AddUserModal";
 import EditUserModal from "./users/EditUserModal";
 import AppointmentHistoryModal from "./appointments/AppointmentHistoryModal";
 import UserReportModal from "./reports/UserReportModel";
 import DeleteUserModal from "./users/DeleteUserModal";
+import { UsersData, User } from '~/components/data/users.server';
+
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const page = url.searchParams.get("page") || "1";
+  const limit = url.searchParams.get("limit") || "10";
+  const query = url.searchParams.get("query") || "";
+
+  const response = await UsersData({ page: Number(page), limit: Number(limit), query });
+  return response;
+}
 
 export default function Users() {
+  const { data, total_elements, total_pages, page, limit } = useLoaderData<{
+    data: User[];
+    total_elements: number;
+    total_pages: number;
+    page: number;
+    limit: number;
+  }>();
+  const [users] = useState<User[]>(data);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [isAppointmentHistoryModalOpen, setIsAppointmentHistoryModalOpen] = useState(false);
@@ -15,36 +37,18 @@ export default function Users() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  type UserRole = "Client" | "Admin" | "Professional";
+  const handlePageChange = (newPage: number) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", String(newPage));
+    window.location.href = url.toString();
+  };
 
-  interface User {
-    id: number;
-    name: string;
-    username: string;
-    role: UserRole;
-    dob: string;
-  }
-
-  interface Appointment {
-    id: number;
-    service: string;
-    date: string;
-    time: string;
-    professional: string;
-  }
-
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: "Sarah Johnson", username: "sarahj", role: "Client", dob: "07/02/1998" },
-    { id: 2, name: "Yeray Zafra", username: "yerayz", role: "Admin", dob: "01/01/2005" },
-    { id: 3, name: "John Bones", username: "johnb", role: "Professional", dob: "09/07/1974" },
-    { id: 4, name: "Jessica Jones", username: "jessicaj", role: "Client", dob: "15/09/1977" },
-    { id: 5, name: "Emiliano García", username: "emilianog", role: "Client", dob: "24/12/1999" },
-  ]);
-
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    { id: 1, service: "Haircut", date: "2025-01-15", time: "10:00 AM", professional: "John Doe" },
-    { id: 2, service: "Manicure", date: "2025-02-10", time: "02:00 PM", professional: "Sarah Smith" },
-  ]);
+  const handleSearch = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("query", searchQuery);
+    url.searchParams.set("page", "1");
+    window.location.href = url.toString();
+  };
 
   const roleColors = {
     Client: "text-green-600",
@@ -68,6 +72,7 @@ export default function Users() {
     setSelectedUser(user);
     setIsAppointmentHistoryModalOpen(true);
   };
+
   const closeAppointmentHistoryModal = () => {
     setIsAppointmentHistoryModalOpen(false);
     setSelectedUser(null);
@@ -92,32 +97,81 @@ export default function Users() {
   };
 
   const handleCreateUser = (user: User) => {
-    setUsers((prev) => [...prev, { ...user, id: prev.length + 1 }]);
     console.log("Created User:", user);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === updatedUser.id ? updatedUser : user))
-    );
-    console.log("Updated User:", updatedUser);
-  };
+  const handleUpdateUser = () => {
+    window.location.reload();
+  };  
 
   const handleDeleteUser = () => {
-    setUsers((prev) => prev.filter((user) => user.id !== selectedUser?.id));
-    console.log(`Deleted user: ${selectedUser?.name}`);
+    window.location.reload();
     closeDeleteUserModal();
   };
 
-  const getReportData = (userId: number) => {
-    const reportData = {
-      labels: ["January", "February", "March", "April", "May", "June"],
-      data: [10, 20, 15, 25, 30, 40],
-    };
-
-    console.log(`Fetching report for user ID: ${userId}`);
-    return reportData;
-  };
+  function renderActions(user: User) {
+    switch (user.role.name) {
+      case "Admin":
+        return (
+          <button
+            onClick={() => openEditUserModal(user)}
+            className="text-yellow-500 hover:text-yellow-600"
+          >
+            <i className="fa-regular fa-pen-to-square"></i>
+          </button>
+        );
+      case "Professional":
+        return (
+          <>
+            <button
+              onClick={() => openEditUserModal(user)}
+              className="text-yellow-500 hover:text-yellow-600"
+            >
+              <i className="fa-regular fa-pen-to-square"></i>
+            </button>
+            <button
+              onClick={() => openReportModal(user)}
+              className="text-black hover:text-gray-600"
+            >
+              <i className="fa-regular fa-clipboard"></i>
+            </button>
+            <div className="border-l border-gray-300"></div>
+            <button
+              onClick={() => openDeleteUserModal(user)}
+              className="text-red-500 hover:text-red-600"
+            >
+              <i className="fa-regular fa-trash-can"></i>
+            </button>
+          </>
+        );
+      case "Client":
+        return (
+          <>
+            <button
+              onClick={() => openEditUserModal(user)}
+              className="text-yellow-500 hover:text-yellow-600"
+            >
+              <i className="fa-regular fa-pen-to-square"></i>
+            </button>
+            <button
+              onClick={() => openAppointmentHistoryModal(user)}
+              className="text-gray-500 hover:text-gray-600"
+            >
+              <i className="fa-solid fa-clock-rotate-left"></i>
+            </button>
+            <div className="border-l border-gray-300"></div>
+            <button
+              onClick={() => openDeleteUserModal(user)}
+              className="text-red-500 hover:text-red-600"
+            >
+              <i className="fa-regular fa-trash-can"></i>
+            </button>
+          </>
+        );
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">
@@ -126,15 +180,23 @@ export default function Users() {
         <input
           type="text"
           placeholder="Search a user"
-          className="rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none bg-gray-500"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none bg-gray-500 w-36"
         />
+        <button
+          onClick={handleSearch}
+          className="ml-2 px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-700 focus:outline-none"
+        >
+          Search
+        </button>
       </div>
 
       {/* User List */}
       <div className="space-y-4">
-        {users.map((user, index) => (
+        {users.map((user) => (
           <div
-            key={index}
+            key={user.id}
             className="flex items-center justify-between bg-white p-4 rounded-md shadow-md"
           >
             {/* User Info */}
@@ -142,44 +204,53 @@ export default function Users() {
               <div>
                 <h3 className="text-lg font-semibold text-[#704214]">{user.name}</h3>
                 <p className="text-sm text-gray-500">{user.username}</p>
+                <p className="text-sm text-gray-500">{user.email}</p>
               </div>
-              {/* Aligned Role */}
               <div className="w-40 text-center">
-                <p className={`text-sm font-bold ${roleColors[user.role]}`}>{user.role}</p>
+                <p className={`text-sm font-bold ${roleColors[user.role.name]}`}>
+                  {user.role.name}
+                </p>
               </div>
-              <p className="text-sm text-gray-500">{user.dob}</p>
+              <p className="text-sm text-gray-500">{user.phone_number}</p>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-4">
-              <button 
-                onClick={() => openEditUserModal(user)} 
-                className="text-yellow-500 hover:text-yellow-600"
-              >
-                <i className="fa-regular fa-pen-to-square"></i>
-              </button>
-              <button
-                onClick={() => openAppointmentHistoryModal(user)}
-                className="text-gray-500 hover:text-gray-600"
-              >
-                <i className="fa-solid fa-clock-rotate-left"></i>
-              </button>
-              <button
-                onClick={() => openReportModal(user)}
-                className="text-black hover:text-gray-600"
-              >
-                <i className="fa-regular fa-clipboard"></i>
-              </button>
-              <div className="border-l border-gray-300"></div>
-                <button 
-                  onClick={() => openDeleteUserModal(user)} 
-                  className="text-red-500 hover:text-red-600"
-                >
-                  <i className="fa-regular fa-trash-can"></i>
-                </button>
-            </div>
+            <div className="flex space-x-4">{renderActions(user)}</div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
+        <p>
+          Mostrando del {(page - 1) * limit + 1} al{" "}
+          {Math.min(page * limit, total_elements)} de {total_elements} usuarios
+        </p>
+        <div className="flex items-center space-x-2">
+          <button
+            className="btn btn-outline-primary"
+            disabled={page <= 1}
+            onClick={() => handlePageChange(page - 1)}
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
+          <select
+            className="form-select"
+            value={page}
+            onChange={(e) => handlePageChange(Number(e.target.value))}
+          >
+            {Array.from({ length: total_pages }, (_, i) => i + 1).map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          <button
+            className="btn btn-primary"
+            disabled={page >= total_pages}
+            onClick={() => handlePageChange(page + 1)}
+          >
+            <i className="fa-solid fa-chevron-right"></i>          
+          </button>
+        </div>
       </div>
 
       {/* Add New User Button */}
@@ -194,7 +265,6 @@ export default function Users() {
         <AddUserModal
           isOpen={isAddUserModalOpen}
           onClose={closeAddUserModal}
-          onCreate={handleCreateUser}
         />
       )}
 
@@ -213,7 +283,7 @@ export default function Users() {
         <AppointmentHistoryModal
           isOpen={isAppointmentHistoryModalOpen}
           onClose={closeAppointmentHistoryModal}
-          appointments={appointments}
+          clientId={selectedUser.id}
           userName={selectedUser.name}
         />
       )}
@@ -224,7 +294,6 @@ export default function Users() {
           isOpen={isReportModalOpen}
           onClose={closeReportModal}
           user={selectedUser}
-          getReportData={getReportData}
         />
       )}
 

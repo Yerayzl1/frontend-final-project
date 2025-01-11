@@ -16,24 +16,56 @@ export default function UserReportModal({
   isOpen,
   onClose,
   user,
-  getReportData,
 }: {
   isOpen: boolean;
   onClose: () => void;
   user: { id: number; name: string };
-  getReportData: (userId: number) => {
-    labels: string[];
-    data: number[];
-  };
 }) {
   const [chartData, setChartData] = useState<{ labels: string[]; data: number[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen && user) {
-      const reportData = getReportData(user.id); 
-      setChartData(reportData);
+      fetchReportData(user.id);
     }
   }, [isOpen, user]);
+
+  const fetchReportData = async (professionalId: number) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/professionals/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          professional_id: professionalId,
+          start_month_year: new Date().toISOString().slice(0, 7),
+          time_range: 6,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChartData({
+          labels: data.labels,
+          data: data.data,
+        });
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || "Failed to fetch report data.");
+      }
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      setError("An error occurred while fetching the report.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -51,14 +83,18 @@ export default function UserReportModal({
           </button>
         </div>
 
-        {chartData ? (
+        {loading ? (
+          <p className="text-center text-gray-600">Loading...</p>
+        ) : error ? (
+          <p className="text-center text-red-600">{error}</p>
+        ) : chartData ? (
           <div className="h-64">
             <Bar
               data={{
                 labels: chartData.labels,
                 datasets: [
                   {
-                    label: "Performance",
+                    label: "Appointments",
                     data: chartData.data,
                     backgroundColor: "#00DDFF",
                     borderColor: "#A3A3A3",
@@ -77,7 +113,7 @@ export default function UserReportModal({
             />
           </div>
         ) : (
-          <p className="text-center text-gray-600">Loading data...</p>
+          <p className="text-center text-gray-600">No data available for this report.</p>
         )}
       </div>
     </div>

@@ -8,27 +8,64 @@ export default function EditUserModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  user: { id: number; name: string; username: string; role: string; dob: string };
+  user: {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    phone_number: string;
+    is_active: boolean;
+  };
   onUpdate: (updatedUser: any) => void;
 }) {
   const [formData, setFormData] = useState({
     name: user.name,
     username: user.username,
-    role: user.role,
-    dob: user.dob,
+    email: user.email,
+    phone_number: user.phone_number,
+    is_active: user.is_active,
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "is_active" ? value === "true" : value,
+    }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate({ ...user, ...formData });
-    onClose();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/users/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
+      const updatedUser = await response.json();
+      onUpdate(updatedUser.user);
+      onClose();
+    } catch (error) {
+      console.error("Error updating user:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -48,7 +85,6 @@ export default function EditUserModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-[#704214]">
               Name
@@ -64,7 +100,6 @@ export default function EditUserModal({
             />
           </div>
 
-          {/* Username */}
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-[#704214]">
               Username
@@ -80,47 +115,61 @@ export default function EditUserModal({
             />
           </div>
 
-          {/* Role */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-[#704214]">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-            >
-              <option value="Admin">Admin</option>
-              <option value="Professional">Professional</option>
-              <option value="Client">Client</option>
-            </select>
-          </div>
-
-          {/* Anniversary Date */}
-          <div>
-            <label htmlFor="dob" className="block text-sm font-medium text-[#704214]">
-              Anniversary Date
+            <label htmlFor="email" className="block text-sm font-medium text-[#704214]">
+              Email
             </label>
             <input
-              type="date"
-              id="dob"
-              name="dob"
-              value={formData.dob}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
 
+          <div>
+            <label htmlFor="phone_number" className="block text-sm font-medium text-[#704214]">
+              Phone number
+            </label>
+            <input
+              type="text"
+              id="phone_number"
+              name="phone_number"
+              value={formData.phone_number}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="is_active" className="block text-sm font-medium text-[#704214]">
+              Active Status
+            </label>
+            <select
+              id="is_active"
+              name="is_active"
+              value={String(formData.is_active)}
+              onChange={handleChange}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
+            >
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
           <div className="text-center">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-700"
+              className={`bg-blue-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-700 ${
+                isSubmitting ? "opacity-50" : ""
+              }`}
+              disabled={isSubmitting}
             >
-              Save Changes
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

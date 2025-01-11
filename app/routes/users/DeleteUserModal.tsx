@@ -16,15 +16,15 @@ export default function DeleteUserModal({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/users/${userId}`, {
+      const response = await fetch(`http://localhost:8000/api/users/${userId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
       if (response.ok) {
-        alert(`User "${userName}" deleted successfully!`);
         onDelete();
       } else {
         alert("Failed to delete user.");

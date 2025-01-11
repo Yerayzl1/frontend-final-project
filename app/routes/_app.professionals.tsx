@@ -34,7 +34,6 @@ export default function Professionals() {
 
   const handleGenerateReport = (reportData) => {
     setCreatedReports((prev) => [...prev, reportData]);
-    setIsAddReportModalOpen(false);
   };
 
   const handleDeleteReport = (reportId: number) => {

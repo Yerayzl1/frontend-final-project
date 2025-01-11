@@ -60,6 +60,7 @@ export default function AddReportModal({
       }
 
       const reportData = await response.json();
+      console.log("Report Data", reportData);
 
       const chartData = {
         labels: reportData.labels,
