@@ -5,8 +5,9 @@ export default function AddProductModal({ isOpen, onClose, onAdd }) {
     name: "",
     price: "",
     stock: "",
-    status: "No stock", 
   });
+
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -15,11 +16,36 @@ export default function AddProductModal({ isOpen, onClose, onAdd }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAdd = () => {
-    const newProduct = { ...formData, stock: parseInt(formData.stock) };
-    onAdd(newProduct);
-    onClose();
-    setFormData({ name: "", price: "", stock: "", status: "No stock" });
+  const handleAdd = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8000/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock, 10),
+        }),
+      });
+
+      if (response.ok) {
+        const newProduct = await response.json();
+        onAdd(newProduct);
+        onClose();
+        setFormData({ name: "", price: "", stock: "" });
+      } else {
+        alert("Failed to add product. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,25 +103,6 @@ export default function AddProductModal({ isOpen, onClose, onAdd }) {
               required
             />
           </div>
-
-          {/* Status */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-[#704214]">
-              Stock Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-            >
-              <option value="Overstock">Overstock</option>
-              <option value="Good stock">Good stock</option>
-              <option value="Low stock">Low stock</option>
-              <option value="No stock">No stock</option>
-            </select>
-          </div>
         </form>
 
         {/* Action Buttons */}
@@ -103,14 +110,16 @@ export default function AddProductModal({ isOpen, onClose, onAdd }) {
           <button
             onClick={onClose}
             className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+            disabled={loading}
           >
             Cancel
           </button>
           <button
             onClick={handleAdd}
             className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
+            disabled={loading}
           >
-            Add Product
+            {loading ? "Adding..." : "Add Product"}
           </button>
         </div>
       </div>
