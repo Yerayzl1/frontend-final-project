@@ -1,10 +1,86 @@
+import { useState } from "react";
+import { useLoaderData } from "@remix-run/react";
+import fs from "fs";
+import path from "path";
+
+export async function loader() {
+  try {
+    const response = await fetch("http://localhost:8000/api/user", {
+      headers: {
+        Authorization: `Bearer ${process.env.API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch user data.");
+    }
+
+    const user = await response.json();
+    return { user };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw new Response("Failed to fetch user data.", { status: 401 });
+  }
+}
+
+export async function action({ request }: { request: Request }) {
+  const formData = await request.formData();
+  const file = formData.get("profile_image") as File;
+
+  if (!file || !file.name.endsWith(".webp")) {
+    return new Response("Only .webp files are allowed.", { status: 400 });
+  }
+
+  const userName = formData.get("name") as string;
+  const fileName = `${userName.toLowerCase().replace(/ /g, "-")}.webp`;
+  const publicPath = path.join(process.cwd(), "public/img/profile_image");
+  const filePath = path.join(publicPath, fileName);
+
+  if (!fs.existsSync(publicPath)) {
+    fs.mkdirSync(publicPath, { recursive: true });
+  }
+
+  const writeStream = fs.createWriteStream(filePath);
+  const fileStream = file.stream();
+
+  const reader = fileStream.getReader();
+  const writer = writeStream;
+
+  async function pump() {
+    const { done, value } = await reader.read();
+    if (done) {
+      writer.end();
+      return;
+    }
+    writer.write(Buffer.from(value));
+    await pump();
+  }
+
+  try {
+    await pump();
+    console.log("File uploaded successfully to:", filePath);
+    return new Response("Profile image updated successfully.", { status: 200 });
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    return new Response("Error uploading file.", { status: 500 });
+  }
+}
 
 export default function Profile() {
-  const user = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    role: "Client",
+  const { user } = useLoaderData();
+  const [profileImage, setProfileImage] = useState("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (!file.name.endsWith(".webp")) {
+        alert("Only .webp files are allowed.");
+        return;
+      }
+      setProfileImage(URL.createObjectURL(file));
+    }
   };
+
   return (
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
@@ -16,7 +92,10 @@ export default function Profile() {
           {/* Profile Picture */}
           <div className="flex flex-col items-center">
             <img
-              src={`/img/profile_image/${user.name.toLowerCase().replace(" ", "-")}.webp`}
+              src={
+                profileImage ||
+                `/img/profile_image/${user.name.toLowerCase().replace(/ /g, "-")}.webp`
+              }
               alt={user.name}
               className="w-36 h-36 rounded-full shadow-md"
             />
@@ -31,12 +110,12 @@ export default function Profile() {
             <p className="text-lg text-gray-700 mb-4">{user.email}</p>
 
             <p className="text-sm font-semibold text-[#704214]">Role:</p>
-            <p className="text-lg text-gray-700">{user.role}</p>
+            <p className="text-lg text-gray-700">{user.role.name}</p>
           </div>
         </div>
 
         {/* Edit Profile Form */}
-        <form method="post" className="space-y-4">
+        <form method="post" encType="multipart/form-data" className="space-y-4">
           {/* Name Field */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-[#704214]">
@@ -65,16 +144,17 @@ export default function Profile() {
             />
           </div>
 
-          {/* Password Field */}
+          {/* Profile Image */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#704214]">
-              Password
+            <label htmlFor="profile_image" className="block text-sm font-medium text-[#704214]">
+              Profile Image (.webp only)
             </label>
             <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Enter a new password"
+              type="file"
+              id="profile_image"
+              name="profile_image"
+              accept=".webp"
+              onChange={handleImageChange}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             />
           </div>
