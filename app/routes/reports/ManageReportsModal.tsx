@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 
 export default function ManageReportsModal({
   isOpen,
   onClose,
   reports,
-  onEdit,
   onDelete,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  reports: { id: number; title: string; date: string }[];
-  onEdit: (reportId: number) => void;
+  reports: { id: number; name: string; labels: string[]; total_appointments: number; }[];
   onDelete: (reportId: number) => void;
 }) {
   if (!isOpen) return null;
@@ -31,29 +29,22 @@ export default function ManageReportsModal({
 
         {/* Lista de reportes */}
         <ul className="space-y-4">
-          {reports.slice(0, 5).map((report) => (
+          {reports.map((report) => (
             <li
               key={report.id}
               className="flex justify-between items-center bg-gray-100 p-4 rounded-md shadow-sm"
             >
               <div>
-                <p className="text-lg font-bold text-[#704214]">{report.title}</p>
-                <p className="text-sm text-gray-600">{report.date}</p>
+                <p className="text-lg font-bold text-[#704214]">{report.name}</p>
+                <p className="text-sm text-gray-600">{report.labels[0]} - {report.labels[report.labels.length - 1]}</p>
+                <p className="text-sm text-gray-600">{report.total_appointments}</p>
               </div>
-              <div className="space-x-2">
-                <button
-                  onClick={() => onEdit(report.id)}
-                  className="bg-blue-500 text-white py-1 px-4 rounded-md hover:bg-blue-600"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(report.id)}
-                  className="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </div>
+              <button
+                onClick={() => onDelete(report.id)}
+                className="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-600"
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>

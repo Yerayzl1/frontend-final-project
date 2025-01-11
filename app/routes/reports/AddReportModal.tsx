@@ -38,21 +38,45 @@ export default function AddReportModal({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleGenerateReport = (e: React.FormEvent) => {
+  const handleGenerateReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mockChartData = {
-      labels: ["January", "February", "March", "April", "May", "June"],
-      datasets: [
-        {
-          label: "Services Completed",
-          data: [12, 19, 3, 5, 2, 3],
-          backgroundColor: "#00DDFF",
+  
+    try {
+      const response = await fetch("http://localhost:8000/api/professionals/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      ],
-    };
+        body: JSON.stringify({
+          professional_id: parseInt(formData.professional),
+          start_month_year: formData.startMonthYear,
+          time_range: parseInt(formData.timeRange),
+        }),
+      });
 
-    setChartData(mockChartData);
-    onGenerateReport(formData);
+      if (!response.ok) {
+        throw new Error("Failed to fetch report data");
+      }
+
+      const reportData = await response.json();
+
+      const chartData = {
+        labels: reportData.labels,
+        datasets: [
+          {
+            label: "Services Completed",
+            data: reportData.data,
+            backgroundColor: "#00DDFF",
+          },
+        ],
+      };
+  
+      setChartData(chartData);
+      onGenerateReport(formData);
+    } catch (error) {
+      console.error("Error generating report:", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -112,7 +136,7 @@ export default function AddReportModal({
               >
                 <option value="">Select Professional</option>
                 {professionals.map((professional) => (
-                  <option key={professional.id} value={professional.name}>
+                  <option key={professional.id} value={professional.id}>
                     {professional.name}
                   </option>
                 ))}

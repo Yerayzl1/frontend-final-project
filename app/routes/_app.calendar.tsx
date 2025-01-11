@@ -9,6 +9,7 @@ export default function Calendar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authUrl, setAuthUrl] = useState("");
   const [error, setError] = useState("");
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -33,6 +34,8 @@ export default function Calendar() {
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
+      } finally {
+        setIsAuthLoading(false);
       }
     }
 
@@ -70,9 +73,12 @@ export default function Calendar() {
         <div className="flex justify-center items-center h-full">
           <a
             href={authUrl}
-            className="bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700"
+            className={`bg-blue-600 text-white py-2 px-4 rounded-md shadow-md ${
+              isAuthLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+            }`}
+            style={{ pointerEvents: isAuthLoading ? "none" : "auto" }}
           >
-            Authenticate with Google
+            {isAuthLoading ? "Loading..." : "Authenticate with Google"}
           </a>
         </div>
       ) : (

@@ -1,22 +1,17 @@
 import React, { useState } from "react";
 
-export default function AddProfessionalModal({
+export default function UpdateProfessionalModal({
   isOpen,
   onClose,
-  onAdd,
+  professional,
+  onUpdate,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (professional: any) => void;
+  professional: any;
+  onUpdate: (updatedProfessional: any) => void;
 }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    username: "",
-    password: "",
-    phone_number: "",
-    role_id: 2,
-  });
+  const [formData, setFormData] = useState(professional);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,35 +22,42 @@ export default function AddProfessionalModal({
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8000/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:8000/api/users/${professional.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to add professional");
+        throw new Error("Failed to update professional");
       }
 
-      const data = await response.json();
-      onAdd(data.data);
+      const updatedProfessional = await response.json();
+      onUpdate(updatedProfessional);
       onClose();
     } catch (error) {
-      console.error("Error adding professional:", error);
+      console.error("Error updating professional:", error);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !professional) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#704214]">Add Professional</h1>
-          <button onClick={onClose} className="text-[#704214] hover:text-red-600" title="Close">
+          <h1 className="text-2xl font-bold text-[#704214]">Update Professional</h1>
+          <button
+            onClick={onClose}
+            className="text-[#704214] hover:text-red-600"
+            title="Close"
+          >
             ✕
           </button>
         </div>
@@ -76,9 +78,9 @@ export default function AddProfessionalModal({
                 type={type}
                 id={id}
                 name={id}
-                value={formData[id]}
+                value={formData[id] || ""}
                 onChange={handleChange}
-                required
+                required={id !== "password"}
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
               />
             </div>
@@ -87,9 +89,9 @@ export default function AddProfessionalModal({
           <div className="text-center">
             <button
               type="submit"
-              className="bg-green-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-green-700"
+              className="bg-blue-600 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-700"
             >
-              Add Professional
+              Save Changes
             </button>
           </div>
         </form>
