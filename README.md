@@ -57,6 +57,17 @@ Carpetes per gestionar diferents funcionalitats:
   - `DeleteUserModal.tsx`: Modal per eliminar un usuari.
   - `EditUserModal.tsx`: Modal per editar la informació d'un usuari.
 
+### Vistes
+**Mostrarem una descripció completa de cada vista.**
+- [Dashboard](./public/docs/Dashboard.md)
+- [Services](./public/docs/Services.md)
+- [Calendar](./public/docs/Calendar.md)
+- [Professionals](./public/docs/Professionals.md)
+- [Users](./public/docs/Users.md)
+- [Service&Appointment](./public/docs/Service&Appointment.md)
+- [Inventory](./public/docs/Inventory.md)
+- [Appointments](./public/docs/Appointments.md)
+
 #### Fitxers d'arrel del frontend
 - **`root.tsx`**: Punt d'entrada principal del frontend.
 - **`tailwind.css`**: Configuració d'estils amb TailwindCSS.
@@ -86,3 +97,8 @@ El projecte utilitza **TailwindCSS** per proporcionar una interfície moderna i 
 
 ## Publicació
 Els fitxers estàtics es troben a la carpeta `public`, incloent imatges, ícons, i altres recursos necessaris.
+
+## Documentació extensa
+La documentació mostrada a aquest README, esta reduida i detallada sobre el desenvolupament frontal de la aplicació. La documentació original del projecte es troba al següent enllaç:
+
+[Carpeta amb la documentació original](https://drive.google.com/drive/folders/1CQivHpZ3Lf0tLycfJsCwwl2AZeXaPeXk?usp=sharing)
