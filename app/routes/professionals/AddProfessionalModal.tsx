@@ -9,6 +9,7 @@ export default function AddProfessionalModal({
   onClose: () => void;
   onAdd: (professional: any) => void;
 }) {
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,14 +38,18 @@ export default function AddProfessionalModal({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add professional");
+        const data = await response.json();
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Failed to create professional");
       }
 
       const data = await response.json();
       onAdd(data.data);
+      setError("");
       onClose();
-    } catch (error) {
-      console.error("Error adding professional:", error);
+    } catch (err) {
+      setError(err.message || "An error occurred");
     }
   };
 
@@ -59,6 +64,13 @@ export default function AddProfessionalModal({
             ✕
           </button>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded-md text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {[

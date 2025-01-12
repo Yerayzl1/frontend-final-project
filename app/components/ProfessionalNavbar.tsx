@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Navbar() {
+export default function ProfessionalNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -23,12 +23,16 @@ export default function Navbar() {
     <div className="relative">
       {/* Navbar */}
       <div className="flex justify-between items-center bg-[#F5E5D3] p-4">
-      <Link to="/dashboard">
-        <button className="text-2xl font-bold text-[#704214] font-inter">
-          ByJesi Admin
-        </button>
-      </Link>
-        <button className="text-[#704214]" onClick={handleToggleMenu} title="Toggle Menu">
+        <Link to="/dashboard">
+          <button className="text-2xl font-bold text-[#704214] font-inter">
+            ByJesi Professional
+          </button>
+        </Link>
+        <button
+          className="text-[#704214]"
+          onClick={handleToggleMenu}
+          title="Toggle Menu"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -93,18 +97,6 @@ export default function Navbar() {
           onClick={() => (window.location.href = "/professionals")}
         >
           <span className="text-[#704214]">Professionals</span>
-        </button>
-        <button
-          className="w-full text-left py-2 px-2 hover:bg-gray-200 rounded-md cursor-pointer"
-          onClick={() => (window.location.href = "/users")}
-        >
-          <span className="text-[#704214]">Users</span>
-        </button>
-        <button
-          className="w-full text-left py-2 px-2 hover:bg-gray-200 rounded-md cursor-pointer"
-          onClick={() => (window.location.href = "/service")}
-        >
-          <span className="text-[#704214]">Service & Appointments</span>
         </button>
         <button
           className="w-full text-left py-2 px-2 hover:bg-gray-200 rounded-md cursor-pointer"

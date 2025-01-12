@@ -1,4 +1,5 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -12,6 +13,13 @@ export default function Register() {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      window.location.href = "/dashboard";
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -41,19 +49,23 @@ export default function Register() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.errors ? Object.values(data.errors).join(", ") : data.message);
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Registration failed");
       }
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      localStorage.setItem("role_id", data.user.role_id);
+      navigate("/services");
     } catch (err: any) {
-      setError(err.message || "An error occurred during registration.");
+      setError(err.message || "An error occurred");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F5E5D3] flex items-center justify-center font-sans">
+      <title>ByJesi - Register</title>
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h1 className="text-2xl font-bold text-[#704214] mb-6 text-center">Register</h1>
 

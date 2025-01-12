@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLoaderData } from '@remix-run/react';
 import Chart from "../components/Chart";
 import EditAppointmentModal from './appointments/EditAppointmentModal';
@@ -14,6 +14,13 @@ export async function loader() {
 
 export default function Service() {
   const { labels, appointmentsData, earningsData, recentAppointments, services } = useLoaderData();
+
+  useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1") {
+      window.location.href = "/services";
+    }
+  }, []);
 
   const [isEditAppointmentModalOpen, setIsEditAppointmentModalOpen] = useState(false);
   const [isDeleteAppointmentModalOpen, setIsDeleteAppointmentModalOpen] = useState(false);
@@ -107,11 +114,12 @@ export default function Service() {
 
       {/* Recent appointments */}
       <div className="bg-[#E1C6A8] p-4 rounded-md shadow-md mb-8">
-        <h3 className="text-lg italic text-[#704214] mb-4">Last appointments</h3>
+        <h3 className="text-lg font-semibold text-[#704214] mb-4">Last appointments</h3>
         <div className="space-y-4">
-          {recentAppointments.map((appointment, index) => (
+        {recentAppointments.length > 0 ? 
+          recentAppointments.map((appointment) => (
             <div
-              key={index}
+              key={appointment.id}
               className="flex justify-between bg-white p-4 rounded-full shadow-md"
             >
               {/* Icon and Service Info */}
@@ -176,7 +184,9 @@ export default function Service() {
                 />
               )}
             </div>
-          ))}
+          )) : (
+            <h1 className="text-[#704214] text-xl text-center">No last appointments found</h1>
+          )}
         </div>
 
         {/* Find a Appointment Button */}
@@ -191,7 +201,8 @@ export default function Service() {
       <div className="bg-[#E1C6A8] p-4 rounded-md shadow-md">
         <h3 className="text-lg font-semibold text-[#704214] mb-4">Services</h3>
         <div className="space-y-4">
-          {services.map((service) => (
+          {services.length > 0 ? 
+            services.map((service) => (
             <div key={service.id} className="flex justify-between items-center bg-[#F5E5D3] p-2 rounded-md shadow-sm">
               <div className="flex items-center space-x-4">
                 <img
@@ -233,7 +244,16 @@ export default function Service() {
                 />
               )}
             </div>
-          ))}
+          )) : (
+            <h1 className="text-[#704214] text-xl text-center">No services found</h1>
+          )}
+        </div>
+
+        {/* View services Button */}
+        <div className="flex justify-end mt-4">
+          <Link to={"/services"} className="text-white py-2 px-4 rounded-md shadow-md bg-blue-500 hover:bg-blue-600">
+            View all services
+          </Link>
         </div>
       </div>
     </div>

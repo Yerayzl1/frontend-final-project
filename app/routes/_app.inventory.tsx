@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLoaderData } from "@remix-run/react";
 import EditProductModal from "./products/EditProductModal";
 import AddProductModal from "./products/AddProductModal";
@@ -21,18 +21,19 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export default function Inventory() {
-  const { data: products, total_elements, total_pages, page, limit } = useLoaderData<{
-    data: Product[];
-    total_elements: number;
-    total_pages: number;
-    page: number;
-    limit: number;
-  }>();
+  const { data: products, total_elements, total_pages, page, limit } = useLoaderData();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1" && roleId !== "2") {
+      window.location.href = "/services";
+    }
+  }, []);
 
   const handleSearch = () => {
     const url = new URL(window.location.href);
@@ -72,7 +73,7 @@ export default function Inventory() {
       <div className="flex justify-end mb-6">
         <input
           type="text"
-          placeholder="Search a product 🔍"
+          placeholder="Search a product"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="rounded-lg px-4 py-2 text-white placeholder:text-white focus:outline-none bg-gray-500"
@@ -88,7 +89,8 @@ export default function Inventory() {
       {/* Product Grid */}
       <div className="bg-[#E1C6A8] p-6 rounded-md shadow-md">
         <div className="grid grid-cols-4 gap-6">
-          {products.map((product) => {
+        {products.length > 0 ?
+          products.map((product) => {
             const status = getStatus(product.stock);
             return (
               <div
@@ -120,15 +122,17 @@ export default function Inventory() {
                 </span>
               </div>
             );
-          })}
+          }) : (
+            <h1 className="text-xl text-[#704214]">No products found</h1>
+          )}
         </div>
       </div>
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
         <p>
-          Mostrando del {(page - 1) * limit + 1} al {Math.min(page * limit, total_elements)} de{" "}
-          {total_elements} productos
+          Showing from {(page - 1) * limit + 1} to {Math.min(page * limit, total_elements)} of{" "}
+          {total_elements} products
         </p>
         <div className="flex items-center space-x-2">
           <button

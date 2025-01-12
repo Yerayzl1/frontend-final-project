@@ -4,12 +4,10 @@ export default function ManageReportsModal({
   isOpen,
   onClose,
   reports,
-  onDelete,
 }: {
   isOpen: boolean;
   onClose: () => void;
   reports: { id: number; name: string; labels: string[]; total_appointments: number; }[];
-  onDelete: (reportId: number) => void;
 }) {
   if (!isOpen) return null;
 
@@ -29,7 +27,8 @@ export default function ManageReportsModal({
 
         {/* Lista de reportes */}
         <ul className="space-y-4">
-          {reports.map((report) => (
+        {Object.values(reports).length > 0 ? 
+          Object.values(reports).map((report) => (
             <li
               key={report.id}
               className="flex justify-between items-center bg-gray-100 p-4 rounded-md shadow-sm"
@@ -39,14 +38,10 @@ export default function ManageReportsModal({
                 <p className="text-sm text-gray-600">{report.labels[0]} - {report.labels[report.labels.length - 1]}</p>
                 <p className="text-sm text-gray-600">{report.total_appointments}</p>
               </div>
-              <button
-                onClick={() => onDelete(report.id)}
-                className="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-600"
-              >
-                Delete
-              </button>
             </li>
-          ))}
+          )) : (
+            <h1 className="text-xl text-center text-[#704214]">No reports available</h1>
+          )}
         </ul>
       </div>
     </div>

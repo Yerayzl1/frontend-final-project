@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLoaderData } from '@remix-run/react';
 import AddUserModal from "./users/AddUserModal";
 import EditUserModal from "./users/EditUserModal";
@@ -36,6 +36,13 @@ export default function Users() {
 
   const [editUser, setEditUser] = useState<User | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1") {
+      window.location.href = "/services";
+    }
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     const url = new URL(window.location.href);
@@ -94,10 +101,6 @@ export default function Users() {
   const closeDeleteUserModal = () => {
     setSelectedUser(null);
     setIsDeleteUserModalOpen(false);
-  };
-
-  const handleCreateUser = (user: User) => {
-    console.log("Created User:", user);
   };
 
   const handleUpdateUser = () => {
@@ -194,7 +197,8 @@ export default function Users() {
 
       {/* User List */}
       <div className="space-y-4">
-        {users.map((user) => (
+      {users.length > 0 ?
+          users.map((user) => (
           <div
             key={user.id}
             className="flex items-center justify-between bg-white p-4 rounded-md shadow-md"
@@ -215,14 +219,16 @@ export default function Users() {
             </div>
             <div className="flex space-x-4">{renderActions(user)}</div>
           </div>
-        ))}
+        )) : (
+          <h1 className="text-xl text-center text-[#704214]">No users available</h1>
+        )}
       </div>
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
         <p>
-          Mostrando del {(page - 1) * limit + 1} al{" "}
-          {Math.min(page * limit, total_elements)} de {total_elements} usuarios
+          Showing from {(page - 1) * limit + 1} to {Math.min(page * limit, total_elements)} of{" "}
+          {total_elements} users
         </p>
         <div className="flex items-center space-x-2">
           <button

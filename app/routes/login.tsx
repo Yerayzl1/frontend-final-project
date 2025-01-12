@@ -1,4 +1,6 @@
-import { useState } from "react";
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -6,6 +8,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      window.location.href = "/dashboard";
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,15 +27,22 @@ export default function Login() {
         },
         body: JSON.stringify({ username: username, password: password }),
       });
-
+      
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Login failed");
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Login failed");
       }
 
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      localStorage.setItem("role_id", data.user.role_id);
+      if (data.user.role_id === 1 || data.user.role_id === 2) {
+        navigate("/dashboard");
+        return;
+      }
+      navigate("/services");
     } catch (err: any) {
       setError(err.message || "An error occurred");
     }
@@ -34,6 +50,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#F5E5D3] flex items-center justify-center font-sans">
+      <title>ByJesi - Login</title> 
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h1 className="text-2xl font-bold text-[#704214] mb-6 text-center">Login</h1>
 

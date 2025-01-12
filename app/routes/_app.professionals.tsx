@@ -1,7 +1,7 @@
 import Chart from "../components/Chart";
 import AddProfessionalModal from "./professionals/AddProfessionalModal";
 import ManageProfessionalsModal from "./professionals/ManageProfessionalsModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddReportModal from "./reports/AddReportModal";
 import ManageReportsModal from "./reports/ManageReportsModal";
 import { ProfessionalsData } from '~/components/data/professionals.server';
@@ -19,7 +19,14 @@ export default function Professionals() {
   const [isManageProfessionalModalOpen, setIsManageProfessionalModalOpen] = useState(false);
   const [isAddReportModalOpen, setIsAddReportModalOpen] = useState(false);
   const [isManageReportModalOpen, setIsManageReportModalOpen] = useState(false);
-  const [createdReports, setCreatedReports] = useState(reports);
+  const [createdReports] = useState(reports);
+
+  useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1" && roleId !== "2") {
+      window.location.href = "/services";
+    }
+  }, []);
 
   const handleAddProfessional = (newProfessional: any) => {
     professionals.push(newProfessional);
@@ -30,14 +37,6 @@ export default function Professionals() {
     const index = professionals.findIndex((pro) => pro.id === updatedProfessional.id);
     professionals[index] = updatedProfessional;
     navigate("/professionals");
-  };
-
-  const handleGenerateReport = (reportData) => {
-    setCreatedReports((prev) => [...prev, reportData]);
-  };
-
-  const handleDeleteReport = (reportId: number) => {
-    setCreatedReports((prev) => prev.filter((report) => report.id !== reportId));
   };
 
   return (
@@ -63,25 +62,29 @@ export default function Professionals() {
         <div>
           <h2 className="text-2xl font-semibold text-[#704214] mb-4">Professionals</h2>
           <div className="space-y-4">
-            {professionals.map((pro) => (
-              <div
-                key={pro.id}
-                className="flex items-center justify-between bg-white p-4 rounded-md shadow-md"
-              >
-                <div>
-                  <h3 className="text-lg font-semibold text-[#704214]">{pro.name}</h3>
-                  <p className="text-sm text-[#704214]">{pro.email}</p>
-                  <p className="text-sm text-[#704214]">{pro.phone_number}</p>
-                </div>
-                <p
-                  className={`text-sm font-bold ${
-                    pro.is_active ? "text-green-600" : "text-red-600"
-                  }`}
+          {professionals.length > 0 ? (
+              professionals.map((pro) => (
+                <div
+                  key={pro.id}
+                  className="flex items-center justify-between bg-white p-4 rounded-md shadow-md"
                 >
-                  {pro.is_active ? "Online" : "Offline"}
-                </p>
-              </div>
-            ))}
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#704214]">{pro.name}</h3>
+                    <p className="text-sm text-[#704214]">{pro.email}</p>
+                    <p className="text-sm text-[#704214]">{pro.phone_number}</p>
+                  </div>
+                  <p
+                    className={`text-sm font-bold ${
+                      pro.is_active ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {pro.is_active ? "Online" : "Offline"}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <h1 className="text-xl text-center text-[#704214]">No professionals available</h1>
+            )}
           </div>
           {/* Buttons */}
           <div className="flex justify-between mt-6">
@@ -115,7 +118,8 @@ export default function Professionals() {
         <div>
           <h2 className="text-2xl font-semibold text-[#704214] mb-4">Reports</h2>
           <div className="grid grid-cols-2 gap-4">
-            {reports.map((report) => (
+          {Object.values(reports).length > 0 ? 
+            Object.values(reports).map((report) => (
               <div key={report.id} className="[#D8C3A5] p-4 rounded-md shadow-md">
                 <h3 className="text-center text-lg font-semibold text-[#704214] mb-2">{report.name}</h3>
                 <div className="flex justify-center">
@@ -140,12 +144,12 @@ export default function Professionals() {
                         tooltip: { enabled: true },
                       },
                     }}
-                    width={150}
-                    height={150}
                   />
                 </div>
               </div>
-            ))}
+            )) : (
+              <h1 className="text-xl text-center text-[#704214]">No reports available</h1>
+            )}
           </div>
           {/* Buttons */}
           <div className="flex justify-between mt-6">
@@ -161,7 +165,6 @@ export default function Professionals() {
             <AddReportModal
               isOpen={isAddReportModalOpen}
               onClose={() => setIsAddReportModalOpen(false)}
-              onGenerateReport={handleGenerateReport}
               professionals={professionals}
             />
           )}
@@ -171,7 +174,6 @@ export default function Professionals() {
               isOpen={isManageReportModalOpen}
               onClose={() => setIsManageReportModalOpen(false)}
               reports={createdReports}
-              onDelete={handleDeleteReport}
             />
           )}
         </div>

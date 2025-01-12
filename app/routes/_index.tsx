@@ -3,6 +3,7 @@ import { Link } from "@remix-run/react";
 export default function Index() {
   return (
     <div className="relative h-screen w-screen bg-cover bg-center" style={{ backgroundImage: "url('img/modeloPelo.jpg')" }}>
+      <title>ByJesi</title>
       {/* Logo */}
       <div className="absolute top-4 left-4 text-white text-lg font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
         ByJesi

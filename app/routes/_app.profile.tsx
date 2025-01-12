@@ -1,27 +1,6 @@
-import { useState } from "react";
-import { useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
 import fs from "fs";
 import path from "path";
-
-export async function loader() {
-  try {
-    const response = await fetch("http://localhost:8000/api/user", {
-      headers: {
-        Authorization: `Bearer ${process.env.API_TOKEN}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user data.");
-    }
-
-    const user = await response.json();
-    return { user };
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    throw new Response("Failed to fetch user data.", { status: 401 });
-  }
-}
 
 export async function action({ request }: { request: Request }) {
   const formData = await request.formData();
@@ -58,7 +37,6 @@ export async function action({ request }: { request: Request }) {
 
   try {
     await pump();
-    console.log("File uploaded successfully to:", filePath);
     return new Response("Profile image updated successfully.", { status: 200 });
   } catch (error) {
     console.error("Error uploading file:", error);
@@ -67,8 +45,34 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function Profile() {
-  const { user } = useLoaderData();
   const [profileImage, setProfileImage] = useState("");
+  const [user, setUser] = useState(null);
+
+  async function getUser() {
+    try {
+      const response = await fetch("http://localhost:8000/api/user", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+
+      const userData = await response.json();
+      setUser(userData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setUser(null);
+    }
+  }
+
+  useEffect(() => {
+    getUser();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -80,6 +84,14 @@ export default function Profile() {
       setProfileImage(URL.createObjectURL(file));
     }
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5E5D3]">
+        <p className="text-lg text-[#704214]">Loading user data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">

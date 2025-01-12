@@ -6,13 +6,20 @@ export default function EditAppointment() {
 
   const { id } = useParams();
   const [appointment, setAppointment] = useState(null);
-  const [client, setClient] = useState([]);
-  const [professional, setProfessional] = useState([]);
-  const [service, setService] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [professionals, setProfessionals] = useState([]);
+  const [services, setServices] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1" && roleId !== "2") {
+      window.location.href = "/services";
+    }
+
     if (id) {
       fetchAppointmentData();
+      fetchSelectableData();
     }
   }, [id]);
 
@@ -24,15 +31,33 @@ export default function EditAppointment() {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch appointment details");
+        throw new Error("Failed to fetch appointment data");
       }
+
       const data = await response.json();
       setAppointment(data.data);
-      setClient(data.data.client);
-      setProfessional(data.data.professional);
-      setService(data.data.service);
     } catch (err) {
-      console.error("Fetching appointment error: ", err.message);
+      console.error(err.message);
+    }
+  };
+
+  const fetchSelectableData = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/dashboard/selectable-data", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch selectable data");
+      }
+
+      const data = await response.json();
+      setClients(data.clients);
+      setProfessionals(data.professionals);
+      setServices(data.services);
+    } catch (err) {
+      console.error(err.message);
     }
   };
 
@@ -64,14 +89,17 @@ export default function EditAppointment() {
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const data = await response.json();
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Failed to update appointments");
       }
 
       await response.json();
-
+      setError("");
       navigate("/dashboard");
     } catch (err) {
-      console.error(err.message);
+      setError(err.message || "An error occurred");
     }
   };
 
@@ -87,6 +115,13 @@ export default function EditAppointment() {
     <div className="min-h-screen bg-[#F5E5D3] p-6 font-sans">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h1 className="text-2xl font-bold text-[#704214] mb-6">Edit Appointment</h1>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded-md text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Appointment ID */}
@@ -114,11 +149,20 @@ export default function EditAppointment() {
               name="client_id"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-              defaultValue={client.id || ""}
+              defaultValue={appointment.client_id || ""}
             >
-              <option key={client.id} value={client.id}>
-                {client.username}
-              </option>
+              {clients.length > 0 ? (
+                <>
+                  <option value={appointment.client_id}>{appointment.client.name}</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No clients available</option>
+              )}
             </select>
           </div>
 
@@ -132,11 +176,20 @@ export default function EditAppointment() {
               name="professional_id"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-              defaultValue={professional.id || ""}
+              defaultValue={appointment.professional_id || ""}
             >
-              <option key={professional.id} value={professional.id}>
-                {professional.username}
-              </option>
+              {professionals.length > 0 ? (
+                <>
+                  <option value={appointment.professional_id}>{appointment.professional.name}</option>
+                  {professionals.map((professional) => (
+                    <option key={professional.id} value={professional.id}>
+                      {professional.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No professionals available</option>
+              )}
             </select>
           </div>
 
@@ -150,11 +203,20 @@ export default function EditAppointment() {
               name="service_id"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-              defaultValue={service.id || ""}
+              defaultValue={appointment.service_id || ""}
             >
-              <option key={service.id} value={service.id}>
-                {service.name}
-              </option>
+              {services.length > 0 ? (
+                <>
+                  <option value={appointment.service_id}>{appointment.service.name}</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No services available</option>
+              )}
             </select>
           </div>
 
@@ -187,7 +249,7 @@ export default function EditAppointment() {
               name="hour"
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
-              defaultValue={appointment.hour.slice(0, -3) || ""}
+              defaultValue={appointment.hour || ""}
             />
           </div>
 

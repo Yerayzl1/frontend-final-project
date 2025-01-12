@@ -47,7 +47,6 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
       total_price: parseFloat(formData.get("total_price") as string),
       payment_method: formData.get("payment_method"),
     };
-    console.log("Appointment data:", appointmentData);
 
     try {
       const response = await fetch("http://localhost:8000/api/appointments", {
@@ -63,8 +62,7 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
         throw new Error("Failed to create appointment");
       }
 
-      const result = await response.json();
-      console.log("Appointment created:", result);
+      await response.json();
       onClose();
     } catch (err) {
       console.error(err.message);
@@ -102,12 +100,18 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             >
-              <option value="">Select Client</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
+              {clients.length > 0 ? (
+                <>
+                  <option value="">Select Client</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No clients available</option>
+              )}
             </select>
           </div>
 
@@ -125,12 +129,18 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             >
-              <option value="">Select Professional</option>
-              {professionals.map((professional) => (
-                <option key={professional.id} value={professional.id}>
-                  {professional.name}
-                </option>
-              ))}
+              {professionals.length > 0 ? (
+                <>
+                  <option value="">Select Professional</option>
+                  {professionals.map((professional) => (
+                    <option key={professional.id} value={professional.id}>
+                      {professional.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No professionals available</option>
+              )}
             </select>
           </div>
 
@@ -148,12 +158,18 @@ export default function NewAppointmentModal({ isOpen, onClose }) {
               required
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
             >
-              <option value="">Select Service</option>
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
+              {services.length > 0 ? (
+                <>
+                  <option value="">Select Service</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value="">No services available</option>
+              )}
             </select>
           </div>
 

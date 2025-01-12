@@ -1,5 +1,5 @@
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NewAppointmentModal from "./appointments/NewAppointmentModal";
 import NewClientModal from "./clients/NewClientModal";
 import DeleteAppointmentModal from "./appointments/DeleteAppointmentModal";
@@ -18,6 +18,13 @@ export default function Dashboard() {
   const [isDeleteAppointmentModalOpen, setIsDeleteAppointmentModalOpen] = useState(false);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+
+  useEffect(() => {
+    const roleId = localStorage.getItem("role_id");
+    if (roleId !== "1" && roleId !== "2") {
+      window.location.href = "/services";
+    }
+  }, []);
 
   const openModal = (appointmentId) => {
     setDeleteAppointmentId(appointmentId);
@@ -54,7 +61,7 @@ export default function Dashboard() {
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-[#704214] mb-4">Upcoming appointments</h2>
         <div className="space-y-4">
-          {appointments &&
+          {appointments && appointments.length > 0 ? (
             appointments.map((appointment) => (
               <div
                 key={appointment.id}
@@ -83,7 +90,10 @@ export default function Dashboard() {
                   />
                 )}
               </div>
-            ))}
+            ))
+          ) : (
+            <h1 className="text-3xl text-center text-[#704214]">No upcoming appointments.</h1>
+          )}
         </div>
       </div>
 
@@ -128,29 +138,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-// Manejador para errores específicos del loader
-export function CatchBoundary() {
-  return (
-    <div className="min-h-screen bg-red-100 p-6 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold text-red-500">Error de Carga</h1>
-      <p className="text-xl text-red-700">No se pudieron obtener los datos requeridos.</p>
-      <p className="text-lg text-red-500">Por favor, inténtalo de nuevo más tarde.</p>
-    </div>
-  );
-}
-
-export function ErrorBoundary({ error }) {
-  return (
-    <div className="min-h-screen bg-red-100 p-6 flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold text-red-500">Unexpected Error</h1>
-      <p className="text-xl text-red-700">
-        {error || "An unknown error occurred."}
-      </p>
-      <p className="text-lg text-red-500">
-        Please try again later or contact support.
-      </p>
-    </div>
-  );
-}
-

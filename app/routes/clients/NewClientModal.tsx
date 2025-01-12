@@ -1,4 +1,7 @@
+import { useState } from 'react';
+
 export default function NewClientModal({ isOpen, onClose }) {
+  const [error, setError] = useState("");
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
@@ -27,14 +30,17 @@ export default function NewClientModal({ isOpen, onClose }) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create client");
+        const data = await response.json();
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Failed to create client");
       }
 
-      const result = await response.json();
-      console.log("Client created:", result);
+      await response.json();
+      setError("");
       onClose();
     } catch (err) {
-      console.error(err.message);
+      setError(err.message || "An error occurred");
     }
   };
 
@@ -51,6 +57,13 @@ export default function NewClientModal({ isOpen, onClose }) {
             ✕
           </button>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded-md text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}

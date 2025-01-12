@@ -8,7 +8,6 @@ export async function ServiceData() {
   const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
   try {
-    // Fetch services done and earnings data
     const [servicesResponse, recentAppointmentsResponse, allServicesResponse] = await Promise.all([
       fetch("http://localhost:8000/api/services/done", {
         method: "POST",

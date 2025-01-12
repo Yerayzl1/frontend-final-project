@@ -15,12 +15,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function AddReportModal({
   isOpen,
   onClose,
-  onGenerateReport,
   professionals,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onGenerateReport: (reportData: any) => void;
   professionals: { id: number; name: string }[];
 }) {
   const [formData, setFormData] = useState({
@@ -60,7 +58,6 @@ export default function AddReportModal({
       }
 
       const reportData = await response.json();
-      console.log("Report Data", reportData);
 
       const chartData = {
         labels: reportData.labels,
@@ -74,7 +71,6 @@ export default function AddReportModal({
       };
   
       setChartData(chartData);
-      onGenerateReport(formData);
     } catch (error) {
       console.error("Error generating report:", error);
     }
@@ -135,12 +131,18 @@ export default function AddReportModal({
                 required
                 className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#704214] focus:border-[#704214]"
               >
-                <option value="">Select Professional</option>
-                {professionals.map((professional) => (
-                  <option key={professional.id} value={professional.id}>
-                    {professional.name}
-                  </option>
-                ))}
+                {professionals.length > 0 ? (
+                  <>
+                    <option value="">Select Professional</option>
+                    {professionals.map((professional) => (
+                      <option key={professional.id} value={professional.id}>
+                        {professional.name}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <option value="">No professionals available</option>
+                )}
               </select>
             </div>
 

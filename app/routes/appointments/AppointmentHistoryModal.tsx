@@ -54,11 +54,11 @@ export default function AppointmentHistoryModal({
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       role="dialog"
-      onClick={onClose} // Cierra el modal al hacer clic fuera del contenido
+      onClick={onClose}
     >
       <div
         className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full"
-        onClick={(e) => e.stopPropagation()} // Evita cerrar el modal al hacer clic dentro del contenido
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#704214]">

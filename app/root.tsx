@@ -1,9 +1,12 @@
 import {
+  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 
@@ -38,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="bg-[#F5E5D3]">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -47,32 +50,49 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  return <Outlet />;
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  let code = 500;
+  let title = "An error occurred";
+  let message = "Something went wrong. Please try again.";
+
+  if (isRouteErrorResponse(error)) {
+    code = error.status;
+    title = error.statusText;
+    message = error.data || message;
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  return (
+    <Layout>
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 text-center bg-black-japan">
+        <div className="mb-6 w-full max-w-lg rounded-lg bg-white-japan p-4 text-red-japan">
+        <h1 className="text-5xl">{code}: {title}</h1>
+          <p className="text-lg">{message}</p>
+        </div>
+        <Link
+          to="/"
+          className="rounded bg-[#E1C6A8] px-4 py-2 font-medium text-[#704214] hover:bg-[#dbb891]"
+        >
+          Home
+        </Link>
+      </main>
+    </Layout>
+  );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
+export default function App() {
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Application Error</title>
+        <Meta />
         <Links />
       </head>
-      <body className="bg-[#F5E5D3] text-[#704214] flex items-center justify-center min-h-screen">
-        <div className="text-center p-6 bg-white shadow-lg rounded-lg max-w-lg">
-          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-          <p className="mb-4">{error.message}</p>
-          <a
-            href="/"
-            className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700"
-          >
-            Go Home
-          </a>
-        </div>
+      <body className="min-h-screen bg-[#F5E5D3]">
+        <Outlet />
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>

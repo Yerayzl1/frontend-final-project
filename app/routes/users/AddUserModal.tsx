@@ -42,15 +42,18 @@ export default function AddUserModal({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create user");
+        const data = await response.json();
+        const errorMessages = Object.values(data.errors).flat();
+        setError(errorMessages.join(", "));
+        throw new Error(errorMessages.join(", ") || "Failed to create user");
       }
 
       await response.json();
       onClose();
+      setError("");
       window.location.reload();
-    } catch (error) {
-      console.error("Error creating user:", error);
-      setError("Failed to create user");
+    } catch (err) {
+      setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -72,7 +75,12 @@ export default function AddUserModal({
           </button>
         </div>
 
-        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 mb-4 rounded-md text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}

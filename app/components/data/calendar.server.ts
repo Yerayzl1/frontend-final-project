@@ -4,7 +4,6 @@ export async function CalendarData() {
   let events = [];
 
   try {
-    // Verificar autenticación con Google
     const authResponse = await fetch("http://localhost:8000/api/google/check-auth", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -18,7 +17,6 @@ export async function CalendarData() {
       authStatus = authData.authenticated;
 
       if (authStatus) {
-        // Obtener eventos del calendario si está autenticado
         const eventsResponse = await fetch("http://localhost:8000/api/google/events", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
